@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PISA SPARK - เลือกวิชา</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mali:wght@600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Mali', cursive, sans-serif;
+        }
+
+        body {
+            background-image: url('img/bg3.png');
+            background-size: 100% 100%; /* ยืด/บีบภาพให้พอดีจอ 100% */
+            background-position: center; 
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            width: 100%;
+            height: 100vh; /* บังคับความสูงเท่ากับหน้าจอพอดี */
+            overflow-y: hidden; /* ซ่อนแถบ Scrollbar แนวตั้ง */
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+        }
+
+        .swal2-popup {
+            font-family: 'Mali', cursive, sans-serif !important;
+            border-radius: 24px !important;
+            border: 3.5px solid #222 !important;
+        }
+
+        .top-bar-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .top-row {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .student-badge {
+            background: #10b981;
+            border: 2.5px solid #ffffff;
+            color: #ffffff;
+            padding: 5px 12px;
+            border-radius: 25px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-logout {
+            background: #ef4444;
+            border: 2.5px solid #ffffff;
+            color: #ffffff;
+            padding: 5px 10px;
+            border-radius: 25px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .circle-btn {
+            width: 42px;
+            height: 42px;
+            background: #ffffff;
+            border: 2.5px solid #222222;
+            border-radius: 50%;
+            box-shadow: 0 3px 0 #222222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            color: #222222;
+            text-decoration: none;
+            user-select: none;
+        }
+
+        .lang-btn {
+            background: radial-gradient(circle at 35% 30%, #fff176 0%, #fbc02d 60%, #f57f17 100%);
+            border-color: #5d3900;
+            color: #4a2800;
+            font-size: 14px;
+        }
+
+        /* 🤖 มาสคอสและกรอบคำพูด */
+        #piti-mascot {
+            position: fixed;
+            bottom: 5px;
+            left: 5px;
+            width: 65px;
+            height: auto;
+            cursor: pointer;
+            z-index: 1000;
+            animation: pitiWalk 6s infinite alternate ease-in-out;
+        }
+
+        @keyframes pitiWalk {
+            0% { transform: translateX(0px); }
+            50% { transform: translateX(8px); }
+            100% { transform: translateX(0px); }
+        }
+
+        #piti-speech-bubble {
+            position: fixed;
+            bottom: 80px;
+            left: 10px;
+            background: #ffffff;
+            color: #1e293b;
+            padding: 6px 10px;
+            border-radius: 12px;
+            border: 2.5px solid #222;
+            font-size: 0.72rem;
+            font-weight: 700;
+            box-shadow: 2px 2px 0px #222;
+            z-index: 1001;
+            pointer-events: none;
+            max-width: 160px;
+            transition: opacity 0.4s ease;
+            opacity: 1;
+        }
+
+        .login-prompt-banner {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3.5px solid #222;
+            border-radius: 24px;
+            padding: 20px 16px;
+            text-align: center;
+            box-shadow: 6px 6px 0px #222;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            max-width: 340px;
+            width: 90%;
+            margin-top: auto; 
+            margin-bottom: 10vh; 
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn-main-login {
+            background: #10b981;
+            color: white;
+            font-size: 1rem;
+            font-weight: 800;
+            padding: 10px 20px;
+            border-radius: 25px;
+            border: 2.5px solid #222;
+            box-shadow: 0 4px 0 #222;
+            cursor: pointer;
+        }
+
+        .category-container {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            z-index: 20;
+            width: 100%;
+            max-width: 360px;
+            margin-top: auto; 
+            margin-bottom: 10vh; 
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .subject-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            padding: 14px 18px;
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #ffffff;
+            border: 3px solid #ffffff;
+            border-radius: 40px;
+            text-shadow: 1.5px 1.5px 0px rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+            width: 100%;
+            user-select: none;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+        }
+
+        .btn-science {
+            background: linear-gradient(180deg, #2ed573 0%, #10ac84 100%);
+            box-shadow: 0 5px 0 #0a6950, 0 8px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-math {
+            background: linear-gradient(180deg, #a855f7 0%, #7e22ce 100%);
+            box-shadow: 0 5px 0 #581c87, 0 8px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-reading {
+            background: linear-gradient(180deg, #ff7675 0%, #d63031 100%);
+            box-shadow: 0 5px 0 #8b1d1e, 0 8px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .subject-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.6) !important; }
+        .icon { font-size: 22px; }
+
+        .ai-tutor-float-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 15px;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: white;
+            border: 2.5px solid #ffffff;
+            padding: 8px 14px;
+            border-radius: 25px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            cursor: pointer;
+            z-index: 1500;
+        }
+
+        .login-modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.88);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            padding: 15px;
+        }
+
+        .login-card {
+            background: #ffffff;
+            color: #1e293b;
+            width: 100%;
+            max-width: 340px;
+            border-radius: 20px;
+            border: 3.5px solid #0f172a;
+            padding: 20px 16px;
+            box-shadow: 6px 6px 0px #0f172a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            text-align: center;
+        }
+
+        .login-close-btn {
+            position: absolute;
+            top: 10px; right: 10px;
+            background: #fee2e2; color: #ef4444;
+            border: 2px solid #ef4444; width: 28px; height: 28px;
+            border-radius: 50%; font-weight: 800; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .input-group { width: 100%; margin-top: 10px; text-align: left; }
+        .input-group label { font-size: 0.82rem; font-weight: 800; color: #475569; margin-bottom: 3px; display: block; }
+        .input-field {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 2px solid #222;
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        /* 📱 ปรับ UI และเปลี่ยนภาพพื้นหลังเฉพาะบนมือถือ */
+        @media (max-width: 768px) {
+            body {
+                background-image: url('img/bg-mobile.png');
+            }
+            .category-container, .login-prompt-banner {
+                margin-top: auto;
+                margin-bottom: 110px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="piti-speech-bubble">สวัสดีครับ! สงสัยบทเรียนไหนถามผมได้นะ 👦✨</div>
+    <img id="piti-mascot" src="img/piti1.png" alt="Piti Mascot" title="คลิกเพื่อทักทายครูปิติ!" onclick="pitiClicked()">
+
+    <script>
+        setTimeout(() => {
+            document.getElementById('piti-speech-bubble').style.opacity = '0';
+        }, 5000);
+
+        function pitiClicked() {
+            const messages = [
+                "สู้ๆ ครับ ขอให้วันนี้ได้ดาวเยอะๆนะ! ⭐",
+                "อย่าลืมทบทวนความรู้เรื่องการถ่ายโอนความร้อนนะ 🔥",
+                "คลิกที่ปุ่ม AI Tutor ด้านล่างขวาเพื่อคุยกับผมได้เลย 🤖",
+                "เก่งมากเลยครับที่ตั้งใจเรียน! 🎉"
+            ];
+            const bubble = document.getElementById('piti-speech-bubble');
+            bubble.innerText = messages[Math.floor(Math.random() * messages.length)];
+            bubble.style.opacity = '1';
+            
+            setTimeout(() => { bubble.style.opacity = '0'; }, 4000);
+        }
+    </script>
+
+    <div class="top-bar-container">
+        <div class="top-row">
+            <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+                <div class="student-badge" id="studentDisplay" onclick="openLoginModal()">
+                    <span>👤</span>
+                    <span id="studentNameText">เข้าสู่ระบบ</span>
+                </div>
+                <div class="student-badge" style="background: #8b5cf6;" title="เพชรสำหรับปลดล็อกบทเรียนพิเศษ">
+                    <span>💎</span>
+                    <span id="userCrystalsText">0 เม็ด</span>
+                </div>
+                <button class="btn-logout" id="logoutBtn" onclick="logoutStudent()">
+                    <span>🚪</span>
+                    <span id="logoutText">ออก</span>
+                </button>
+            </div>
+            <button class="student-badge" id="btnLiveGame" style="background: #f59e0b;" onclick="openPinModal()">
+                <span>🕹️</span>
+                <span>เกมสด</span>
+            </button>
+        </div>
+
+        <div class="top-row" style="justify-content: flex-end;">
+            <div style="display: flex; gap: 8px;">
+                <a href="teacher.html" class="circle-btn" title="ระบบสำหรับคุณครู">👨‍🏫</a>
+                <button id="langToggle" class="circle-btn lang-btn" onclick="toggleLanguage()" title="เปลี่ยนภาษา">TH</button>
+                <button id="musicToggle" class="circle-btn" onclick="toggleMusic()" title="เปิด/ปิดเสียง">🔊</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="bgMusic" loop preload="auto">
+        <source src="sound/bgm.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="loginPromptBanner" class="login-prompt-banner">
+        <div style="font-size: 2.5rem;">🔒</div>
+        <h2 id="promptTitle" style="color: #0f172a; font-size: 1.15rem;">กรุณาเข้าสู่ระบบ</h2>
+        <p id="promptDesc" style="color: #64748b; font-size: 0.82rem;">เข้าสู่ระบบด้วยรหัสนักเรียน เพื่อทำแบบฝึกหัด สะสมดาว และรับเพชรฟรีทุกวัน</p>
+        <button class="btn-main-login" id="btnMainLogin" onclick="openLoginModal()">🔑 เข้าสู่ระบบผู้เรียน</button>
+    </div>
+
+    <div id="categoryContainer" class="category-container">
+        <a href="science.html" class="subject-btn btn-science">
+            <span class="icon">🧪</span>
+            <span id="txtScience">วิทยาศาสตร์ (บทที่ 1 ฟรี)</span>
+        </a>
+
+        <a href="math.html" class="subject-btn btn-math">
+            <span class="icon">📐</span>
+            <span id="txtMath">คณิตศาสตร์</span>
+        </a>
+
+        <a href="read.html" class="subject-btn btn-reading">
+            <span class="icon">📖</span>
+            <span id="txtReading">การอ่าน (พื้นฐาน)</span>
+        </a>
+    </div>
+
+    <button class="ai-tutor-float-btn" id="btnAiTutor" onclick="openAiTutorModal()">
+        🤖 ถามครูปิติ AI
+    </button>
+
+    <div id="pinModal" class="login-modal-overlay">
+        <div class="login-card">
+            <button class="login-close-btn" onclick="document.getElementById('pinModal').style.display='none'">✕</button>
+            <h3 class="login-title" id="liveGameTitle">🎮 เข้าร่วมห้องเกมสด</h3>
+            <div class="input-group">
+                <label id="lblPinCode">รหัสห้อง (PIN Code):</label>
+                <input type="text" id="inputRoomPin" class="input-field" placeholder="เช่น 5892" maxlength="4" autocomplete="off">
+            </div>
+            <button class="btn-main-login" id="btnJoinRoom" onclick="joinLiveGameRoom()" style="width: 100%; margin-top: 14px; background: #3b82f6;">เข้าสู่ห้องแข่งขัน 🚀</button>
+        </div>
+    </div>
+
+    <div id="loginModal" class="login-modal-overlay">
+        <div class="login-card">
+            <button class="login-close-btn" onclick="closeLoginModal()">✕</button>
+            <h3 class="login-title" id="modalTitle">🔑 เข้าสู่ระบบผู้เรียน</h3>
+            <div class="input-group">
+                <label for="inpStudentId" id="lblStudentId">รหัสนักเรียน (Student ID):</label>
+                <input type="text" id="inpStudentId" class="input-field" placeholder="เช่น 31216" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="inpStudentClass" id="lblStudentClass">ระดับชั้น / ห้อง (Class):</label>
+                <input type="text" id="inpStudentClass" class="input-field" placeholder="เช่น ม.1/5 หรือ ป.6" autocomplete="off">
+            </div>
+            <button class="btn-main-login" id="btnSubmitLogin" onclick="loginWithStudentId()" style="width: 100%; margin-top: 14px;">เข้าสู่ระบบ 🚀</button>
+        </div>
+    </div>
+
+    <div id="aiTutorModal" class="login-modal-overlay">
+        <div class="login-card" style="max-width: 360px; height: 70vh;">
+            <button class="login-close-btn" onclick="closeAiTutorModal()">✕</button>
+            <h3 class="login-title">🤖 ครูปิติ AI Tutor</h3>
+            <div id="aiChatBox" style="flex: 1; width: 100%; background: #f1f5f9; border: 2px solid #222; border-radius: 10px; padding: 8px; overflow-y: auto; text-align: left; font-size: 0.8rem; margin-bottom: 8px;">
+                <div style="background: #fff; padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 4px;" id="aiGreeting">
+                    สวัสดีครับ! ผมครูปิติ AI Tutor มีเนื้อหาเรื่องไหนสงสัยถามได้เลยครับ! 👦✨
+                </div>
+            </div>
+            <div style="display: flex; width: 100%; gap: 6px;">
+                <input type="text" id="aiUserInput" class="input-field" placeholder="พิมพ์คำถาม..." onkeydown="if(event.key==='Enter') sendMsgToAi()">
+                <button onclick="sendMsgToAi()" id="btnAiSend" style="background: #4f46e5; color: white; border: 2px solid #222; border-radius: 10px; padding: 0 12px; font-weight: 800; cursor: pointer;">ส่ง</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzfA4fKhF8ROV4y_TcTbiGJdi9Ei_OJN8iTSGgr_E6r2kWzjma0_VmG5uU3BSz1mKNjpg/exec";
+
+        let currentStudentId = localStorage.getItem('pisa_current_student_id') || '';
+        let currentStudentClass = localStorage.getItem('pisa_current_student_class') || '';
+        let userStars = parseInt(localStorage.getItem('pisa_stars') || '0', 10);
+        let userCrystals = parseInt(localStorage.getItem('pisa_crystals') || '3', 10);
+        let currentLang = 'th';
+
+        let isMusicPlaying = false;
+        function toggleMusic() {
+            const bgm = document.getElementById('bgMusic');
+            const musicBtn = document.getElementById('musicToggle');
+            if (isMusicPlaying) {
+                bgm.pause();
+                musicBtn.innerText = '🔇';
+            } else {
+                bgm.play().catch(e => console.log('Audio error:', e));
+                musicBtn.innerText = '🔊';
+            }
+            isMusicPlaying = !isMusicPlaying;
+        }
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'th' ? 'en' : 'th';
+            document.getElementById('langToggle').innerText = currentLang === 'th' ? 'TH' : 'EN';
+            
+            if (currentLang === 'en') {
+                document.getElementById('promptTitle').innerText = "Please Login";
+                document.getElementById('promptDesc').innerText = "Login with Student ID to earn stars and daily gems.";
+                document.getElementById('btnMainLogin').innerText = "🔑 Student Login";
+                document.getElementById('txtScience').innerText = "Science (Ch. 1 Free)";
+                document.getElementById('txtMath').innerText = "Mathematics";
+                document.getElementById('txtReading').innerText = "Reading (Basic)";
+                document.getElementById('btnLiveGame').innerHTML = "<span>🕹️</span><span>Live Game</span>";
+                document.getElementById('logoutText').innerText = "Logout";
+                if (!currentStudentId) document.getElementById('studentNameText').innerText = "Login";
+                
+                document.getElementById('modalTitle').innerText = "🔑 Student Login";
+                document.getElementById('lblStudentId').innerText = "Student ID:";
+                document.getElementById('lblStudentClass').innerText = "Class / Room:";
+                document.getElementById('btnSubmitLogin').innerText = "Login 🚀";
+                document.getElementById('btnAiTutor').innerHTML = "🤖 Ask AI Tutor";
+                document.getElementById('liveGameTitle').innerText = "🎮 Join Live Game";
+                document.getElementById('btnJoinRoom').innerText = "Enter Game 🚀";
+                document.getElementById('aiGreeting').innerText = "Hello! I am Piti AI Tutor. Ask me any questions! 👦✨";
+                document.getElementById('btnAiSend').innerText = "Send";
+            } else {
+                document.getElementById('promptTitle').innerText = "กรุณาเข้าสู่ระบบ";
+                document.getElementById('promptDesc').innerText = "เข้าสู่ระบบด้วยรหัสนักเรียน เพื่อทำแบบฝึกหัด สะสมดาว และรับเพชรฟรีทุกวัน";
+                document.getElementById('btnMainLogin').innerText = "🔑 เข้าสู่ระบบผู้เรียน";
+                document.getElementById('txtScience').innerText = "วิทยาศาสตร์ (บทที่ 1 ฟรี)";
+                document.getElementById('txtMath').innerText = "คณิตศาสตร์";
+                document.getElementById('txtReading').innerText = "การอ่าน (พื้นฐาน)";
+                document.getElementById('btnLiveGame').innerHTML = "<span>🕹️</span><span>เกมสด</span>";
+                document.getElementById('logoutText').innerText = "ออก";
+                if (!currentStudentId) document.getElementById('studentNameText').innerText = "เข้าสู่ระบบ";
+                
+                document.getElementById('modalTitle').innerText = "🔑 เข้าสู่ระบบผู้เรียน";
+                document.getElementById('lblStudentId').innerText = "รหัสนักเรียน (Student ID):";
+                document.getElementById('lblStudentClass').innerText = "ระดับชั้น / ห้อง (Class):";
+                document.getElementById('btnSubmitLogin').innerText = "เข้าสู่ระบบ 🚀";
+                document.getElementById('btnAiTutor').innerHTML = "🤖 ถามครูปิติ AI";
+                document.getElementById('liveGameTitle').innerText = "🎮 เข้าร่วมห้องเกมสด";
+                document.getElementById('btnJoinRoom').innerText = "เข้าสู่ห้องแข่งขัน 🚀";
+                document.getElementById('aiGreeting').innerText = "สวัสดีครับ! ผมครูปิติ AI Tutor มีเนื้อหาเรื่องไหนสงสัยถามได้เลยครับ! 👦✨";
+                document.getElementById('btnAiSend').innerText = "ส่ง";
+            }
+        }
+
+        function updateAuthState() {
+            const promptBanner = document.getElementById('loginPromptBanner');
+            const categoryContainer = document.getElementById('categoryContainer');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const studentText = document.getElementById('studentNameText');
+            const crystalsText = document.getElementById('userCrystalsText');
+
+            if (currentStudentId) {
+                promptBanner.style.display = 'none';
+                categoryContainer.style.display = 'flex';
+                logoutBtn.style.display = 'flex';
+                studentText.innerText = `${currentStudentId} (${currentStudentClass || '-'}) | ${userStars} ⭐`;
+                crystalsText.innerText = `${userCrystals} เม็ด`;
+                checkDailyLoginBonus();
+            } else {
+                promptBanner.style.display = 'flex';
+                categoryContainer.style.display = 'none';
+                logoutBtn.style.display = 'none';
+                studentText.innerText = currentLang === 'en' ? "Login" : "เข้าสู่ระบบ";
+                crystalsText.innerText = `0 เม็ด`;
+            }
+        }
+
+        function checkDailyLoginBonus() {
+            const today = new Date().toISOString().slice(0, 10);
+            const lastLogin = localStorage.getItem('pisa_last_crystal_date');
+            if (lastLogin !== today) {
+                userCrystals += 2;
+                localStorage.setItem('pisa_crystals', userCrystals);
+                localStorage.setItem('pisa_last_crystal_date', today);
+                Swal.fire({
+                    title: currentLang === 'en' ? '💎 Daily Free Gems!' : '💎 รับเพชรรายวันฟรี!',
+                    html: currentLang === 'en' ? `Welcome back! You received <span style="color: #8b5cf6; font-weight: bold;">+2 💎 Gems</span>` : `ยินดีต้อนรับกลับมา! คุณได้รับ <span style="color: #8b5cf6; font-weight: bold;">+2 💎 เพชรฟรี</span> สำหรับใช้ปลดล็อกบทเรียนพิเศษวันนี้!`,
+                    icon: 'success',
+                    confirmButtonColor: '#8b5cf6'
+                });
+            }
+        }
+
+        function openPinModal() { document.getElementById('pinModal').style.display = 'flex'; }
+        function openLoginModal() { document.getElementById('loginModal').style.display = 'flex'; }
+        function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
+        function openAiTutorModal() { document.getElementById('aiTutorModal').style.display = 'flex'; }
+        function closeAiTutorModal() { document.getElementById('aiTutorModal').style.display = 'none'; }
+
+        function sendMsgToAi() {
+            const inputField = document.getElementById('aiUserInput');
+            const text = inputField.value.trim();
+            if (!text) return;
+            const chatBox = document.getElementById('aiChatBox');
+            chatBox.innerHTML += `<div style="background: #4f46e5; color: white; padding: 6px 10px; border-radius: 8px; margin-bottom: 4px; text-align: right;">${text}</div>`;
+            inputField.value = '';
+            setTimeout(() => {
+                chatBox.innerHTML += `<div style="background: #fff; padding: 6px 10px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 4px;">🤔 เป็นคำถามที่ดีมากครับ! ลองเข้าไปทำแบบฝึกหัดในหมวดวิชาต่างๆ ดูสิครับ!</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }, 500);
+        }
+
+        async function loginWithStudentId() {
+            const idInput = document.getElementById('inpStudentId').value.trim();
+            const classInput = document.getElementById('inpStudentClass').value.trim() || "-";
+
+            if (!idInput) {
+                Swal.fire({ title: 'กรุณากรอกรหัส', icon: 'warning' });
+                return;
+            }
+
+            currentStudentId = idInput;
+            currentStudentClass = classInput;
+            localStorage.setItem('pisa_current_student_id', currentStudentId);
+            localStorage.setItem('pisa_current_student_class', currentStudentClass);
+            closeLoginModal();
+            updateAuthState();
+
+            Swal.fire({ title: 'เข้าสู่ระบบสำเร็จ!', html: `รหัส <b>${currentStudentId}</b>`, icon: 'success', confirmButtonColor: '#10b981' });
+        }
+
+        function logoutStudent() {
+            Swal.fire({
+                title: 'ต้องการออกจากระบบหรือไม่?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                confirmButtonText: 'ออกจากระบบ',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    currentStudentId = '';
+                    currentStudentClass = '';
+                    userStars = 0;
+                    userCrystals = 3;
+                    localStorage.clear();
+                    updateAuthState();
+                }
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            updateAuthState();
+        });
+    </script>
+</body>
+</html>
